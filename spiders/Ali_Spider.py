@@ -20,6 +20,7 @@ class AliSpiderSpider(scrapy.Spider):
         'Connection': 'keep-alive',
     }
     i = 2
+    # 模拟请求下一页需要发送的数据
     data_content = {"spm": "a26g8.7662790.0.0.wtBMQr",
                     "type": "offer",
                     "keywords": "酒",
@@ -30,11 +31,13 @@ class AliSpiderSpider(scrapy.Spider):
                     "boxSrc": ""}
 
     def parse(self, response):
-
+        
         response_text = response.text
+        #获取所有商品URL
         url_nodes = response.css('.wsw-sync-offerbox .wsw-offer a::attr(href)').extract()
-        match_obj = re.match(r'.*<div class="wsw-sync-offerbox wsw-offers">.*', response_text, re.DOTALL)
-        print (len(url_nodes))
+
+        #print (len(url_nodes))
+        #获取每个商品URL提交给goods_page_parse进行解析
         for i in range(0,len(url_nodes)):
             c = re.search(r'&ui=(.*)&ut', url_nodes[i])
             d = re.search(r'offer/(.*).html',url_nodes[i])
@@ -44,12 +47,15 @@ class AliSpiderSpider(scrapy.Spider):
             if d:
                 goods_url = 'https://m.1688.com/offer/{0}.html'.format(d.group(1))
                 yield Request(url=goods_url,headers=self.header, callback=self.goods_page_parse)
+                
+        #验证是否还有下一页,如果有的话提交翻页数据,并获取下一页的数据继续进行解析
+        match_obj = re.match(r'.*<div class="wsw-sync-offerbox wsw-offers">.*', response_text, re.DOTALL)
         if match_obj:
             self.data_content["beginPage"]+=1
-            yield scrapy.FormRequest(url=self.start_urls,headers=self.header, formdata=self.data_content, callback=self.goods_page_parse)
+            yield scrapy.FormRequest(url=self.start_urls,headers=self.header, formdata=self.data_content)
 
     def goods_page_parse(self, response):
-
+        #对商品详情页面进行解析,找出店铺联系方式页面,并跳转
         html_scripy = response.css('script::text').extract()
         #"memberId":"b2b-1695311802"
         for i in range(0,len(html_scripy)):
@@ -59,9 +65,9 @@ class AliSpiderSpider(scrapy.Spider):
                 company_url = 'https://m.1688.com/winport/{0}.html'.format(company_s_url)
                 yield Request(company_url,headers= self.header, callback=self.contact_page_parse)
 
-
+    
     def contact_page_parse(self,response):
-
+        #对店铺联系方式页面进行解析,并提交给ItemLoader
         # phone_num = response.css('.phone::text').extract()[0]
         # company_information = response.css('.info-container span::text').extract()
         item_loader = ItemLoader(item=AliSpiderInfoItem(), response=response)
