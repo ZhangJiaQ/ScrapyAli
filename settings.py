@@ -8,7 +8,7 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-
+import os
 BOT_NAME = 'AliSpider'
 
 SPIDER_MODULES = ['AliSpider.spiders']
@@ -19,7 +19,7 @@ NEWSPIDER_MODULE = 'AliSpider.spiders'
 #USER_AGENT = 'AliSpider (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -64,9 +64,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'AliSpider.pipelines.AlispiderPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'AliSpider.pipelines.MysqlTwistPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -88,3 +88,10 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+
+MYSQL_HOST = 'localhost'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = '1234'
+MYSQL_DBNAME = 'scrapyspider'
